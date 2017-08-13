@@ -604,7 +604,7 @@ Release 0.8.1 2017/02/02
   BUG FIXES
   * Fix null items of complex type in List<T> or Dictionary<TKey, TValue> will not be deserialized as null. Issue #211.
 
-Release 0.9.0 beta1 2016/09/24
+Release 0.9.0 2017-08-27(planned)
 
   NEW FEATURES
   * Enum name transformation via `SerializationContext.EnumSerializationOptions.NameTransformer`.
@@ -615,20 +615,21 @@ Release 0.9.0 beta1 2016/09/24
   * Asymmetric serializers. You can generate "pack only" serializer when you set SerializationContext.CompabilityOptions.AllowAsymmetricSerializer to true. #68.
   * Built in serializer for System.Text.StringBuilder now supports UnpackTo.
   * Add serialization to/from MessagePackObject as extension methods of MessagePackSerializer and MessagePackSerializer<T>. Issue #90
-
-  BUG FIXES
-  * Fix nuspec to prevent old NuGet clients which do not support .NET Standard TFMs. Issue #177.
-
-Release 0.9.0 beta2 2017/2/12
-
-  NEW FEATURES
   * Users of serializer code generator API can specify TextWriter to output. This may improve tooling chain.
   * Users of serializer code generator API can suppress [DebuggerNonUserCode] attribute to enable debugger step in.
   * SerializerRepository API now expose ContainsFor and GetRegisteredSerializers methods to investigate registered serializers.
   * SerializationContext.DisablePrivilegedAccess for restricted environment like Silverlight to select between granting permission or relinquish non-public access.
   * UWP build is now included.
+  * ByteArrayPacker/ByteArrayUnpacker. They are suitable for fixed pattern serialization/deserialization.
+  * Fast mode of unpacker which omits nested collection management. This option can be disabled with setting UnpackerOptions.ValidationLevel to ValidationLevel.Collection.
+
+  IMPROVEMENTS
+  * Byte array based serialization API now uses ByteArrayPacker/ByteArrayUnpacker, improves about 40% faster than Stream based.
+  * Deserialization now uses ValidationLevel.None, improves about 30% faster than validating one.
+  * Packer/Unpacker performance improvements about 10-20%. As a result, new byte array "fast" unpacker is about 3x faster than previous unpacker.
 
   BUG FIXES
+  * Fix nuspec to prevent old NuGet clients which do not support .NET Standard TFMs. Issue #177.
   * The generated code for the type which has Tuple typed member uses old PackHelper API.
   * Fix struct deserialization. Issue #189. Thank you @samcragg!
   * Fix asynchronous packing is not be emitted correctly. Issue #201
@@ -640,19 +641,6 @@ Release 0.9.0 beta2 2017/2/12
   * Fix null items of complex type in List<T> or Dictionary<TKey, TValue> will not be deserialized as null. Issue #211. (from 0.8.1)
   * Fix types which implement IPackable and IUnpackable but do not have any members cannot be serialized. Issue #202
   * Fix Windows Native build error. Issue #206.
-
-Release 0.9.0 RC1 2017-08-13
-
-  NEW FEATURES
-  * ByteArrayPacker/ByteArrayUnpacker. They are suitable for fixed pattern serialization/deserialization.
-  * Fast mode of unpacker which omits nested collection management. This option can be disabled with setting UnpackerOptions.ValidationLevel to ValidationLevel.Collection.
-
-  IMPROVEMENTS
-  * Byte array based serialization API now uses ByteArrayPacker/ByteArrayUnpacker, improves about 40% faster than Stream based.
-  * Deserialization now uses ValidationLevel.None, improves about 30% faster than validating one.
-  * Packer/Unpacker performance improvements about 10-20%. As a result, new byte array "fast" unpacker is about 3x faster than previous unpacker.
-
-  BUG FIXES
   * Fix constructor deserialization fails if the constructor parameters order is not lexical. Issue #233
   * Fix asynchronous multi dimensional array deserialization corruption.
   * Fix enum serialization throws NullReferenceException in Unity. Issue #215.
