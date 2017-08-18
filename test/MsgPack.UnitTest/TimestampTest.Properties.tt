@@ -1,0 +1,101 @@
+<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".cs" #>
+<#@ assembly Name="System.Core" #>
+<#@ assembly Name="System.Numerics" #>
+<#@ include file="TimestampTest.Common.ttinclude" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Globalization" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Numerics" #>
+<#@ import namespace="System.Runtime.InteropServices" #>
+#region -- License Terms --
+//
+// MessagePack for CLI
+//
+// Copyright (C) 2017 FUJIWARA, Yusuke
+//
+//    Licensed under the Apache License, Version 2.0 (the "License");
+//    you may not use this file except in compliance with the License.
+//    You may obtain a copy of the License at
+//
+//        http://www.apache.org/licenses/LICENSE-2.0
+//
+//    Unless required by applicable law or agreed to in writing, software
+//    distributed under the License is distributed on an "AS IS" BASIS,
+//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//    See the License for the specific language governing permissions and
+//    limitations under the License.
+//
+
+#endregion -- License Terms --
+
+using System;
+#if !MSTEST
+using NUnit.Framework;
+#else
+using TestFixtureAttribute = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestClassAttribute;
+using TestAttribute = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestMethodAttribute;
+using TimeoutAttribute = NUnit.Framework.TimeoutAttribute;
+using Assert = NUnit.Framework.Assert;
+using Is = NUnit.Framework.Is;
+#endif
+
+namespace MsgPack
+{
+	partial class TimestampTest
+	{
+<#
+foreach ( var @case in StandardTestCases.Values )
+{
+#>
+		[Test]
+		public void TestProperties_<#= @case.Label #>()
+		{
+			// <#= @case.RoundtripString #>
+			var target = new Timestamp( <#= @case.Seconds #>, <#= @case.Nanoseconds #> );
+			Assert.That( target.UnixEpochSecondsPart, Is.EqualTo( <#= @case.Seconds #> ), "UnixEpochSecondsPart" );
+			Assert.That( target.NanosecondsPart, Is.EqualTo( <#= @case.Nanoseconds #> ), "NanosecondsPart" );
+
+			Assert.That( target.Year, Is.EqualTo( <#= @case.Year #> ), "Year" );
+			Assert.That( target.Month, Is.EqualTo( <#= @case.Month #> ), "Month" );
+			Assert.That( target.Day, Is.EqualTo( <#= @case.Day #> ), "Day" );
+			Assert.That( target.Hour, Is.EqualTo( <#= @case.Hour #> ), "Hour" );
+			Assert.That( target.Minute, Is.EqualTo( <#= @case.Minute #> ), "Minute" );
+			Assert.That( target.Second, Is.EqualTo( <#= @case.Second #> ), "Second" );
+
+			Assert.That( target.Millisecond, Is.EqualTo( <#= @case.Nanoseconds / 1000000 #> ), "Millisecond" );
+			Assert.That( target.Microsecond, Is.EqualTo( <#= @case.Nanoseconds / 1000 #> ), "Microsecond" );
+			Assert.That( target.Nanosecond, Is.EqualTo( <#= @case.Nanoseconds % 1000 #> ), "Nanosecond" );
+
+			Assert.That( target.DayOfYear, Is.EqualTo( <#= @case.DayOfYear #> ), "DayOfYear" );
+			Assert.That( target.DayOfWeek, Is.EqualTo( <#= @case.DayOfWeek #> ), "DayOfWeek" );
+			Assert.That( target.IsLeapYear, Is.EqualTo( <#= @case.IsLeapYear #> ), "IsLeapYear" );
+		}
+
+<#
+}
+#>
+		[Test]
+		public void TestUtcNow()
+		{
+			var before = DateTimeOffset.UtcNow;
+			var target = Timestamp.UtcNow;
+			var after = DateTimeOffset.UtcNow;
+			// Assert before <= now <= after
+			Assert.That( target.UnixEpochSecondsPart, Is.EqualTo( before.ToUnixTimeSeconds() ).Or.GreatorThan( before.ToUnixTimeSeconds() ) );
+			Assert.That( target.UnixEpochSecondsPart, Is.EqualTo( after.ToUnixTimeSeconds() ).Or.LessThan( after.ToUnixTimeSeconds() ) );
+		}
+
+		[Test]
+		public void TestToday()
+		{
+			var before = DateTimeOffset.UtcNow.Date;
+			var target = Timestamp.Today;
+			var after = DateTimeOffset.UtcNow.Date;
+			// Assert before <= today <= after
+			Assert.That( target.UnixEpochSecondsPart, Is.EqualTo( before.ToUnixTimeSeconds() ).Or.GreatorThan( before.ToUnixTimeSeconds() ) );
+			Assert.That( target.UnixEpochSecondsPart, Is.EqualTo( after.ToUnixTimeSeconds() ).Or.LessThan( after.ToUnixTimeSeconds() ) );
+		}
+	}
+}
